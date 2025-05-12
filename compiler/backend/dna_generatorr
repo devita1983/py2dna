@@ -1,0 +1,146 @@
+
+# py2dna/compiler/backend/dna_generator.py
+#2. Integração com DNAGenerator (Atualizado)
+
+class DNAGenerator:
+    # ... (métodos existentes)
+    
+    def process_parsed_code(self, parsed: Dict) -> Dict:
+        """Processa a saída do parser e gera DNA"""
+        # 1. Registra variáveis
+        self.sequences = parsed['variables']
+        
+        # 2. Processa cada operação
+        outputs = {}
+        for op in parsed['operations']:
+            if op['type'] == 'conditional':
+                result = self._process_conditional(op)
+                outputs.update(result)
+        
+        return {
+            'variables': self.sequences,
+            'operations': self.results,
+            'outputs': outputs
+        }
+    
+    def _process_conditional(self, op: Dict) -> Dict:
+        """Processa condicionais if-else"""
+        # Avalia a condição
+        condition_result = self._evaluate_condition(op['condition'])
+        
+        # Executa o bloco apropriado
+        if condition_result:
+            return self._process_block(op['then'])
+        else:
+            return self._process_block(op['else'])
+    
+    def _evaluate_condition(self, condition: Dict) -> bool:
+        """Avalia condições complexas"""
+        if condition['type'] == 'comparison':
+            return self._evaluate_comparison(condition)
+        elif condition['type'] == 'boolean':
+            return self._evaluate_boolean(condition)
+        elif condition['type'] == 'unary':
+            return self._evaluate_unary(condition)
+    
+    def _evaluate_comparison(self, condition: Dict) -> bool:
+        """Avalia comparações simples"""
+        left = self._get_sequence(condition['left'])
+        right = self._get_sequence(condition['right'])
+        op = condition['op']
+        
+        # Gera a operação molecular
+        result = self.generate({
+            'operation': op,
+            'input_a': condition['left']['name'] if condition['left']['type'] == 'variable' else 'literal',
+            'input_b': condition['right']['name'] if condition['right']['type'] == 'variable' else 'literal',
+            'output': f'temp_{len(self.results)}'
+        })
+        
+        # Para propósitos de simulação, usa avaliação Python
+        if op == '==':
+            return str(left) == str(right)
+        elif op == '!=':
+            return str(left) != str(right)
+        # ... outras comparações
+    
+    def _evaluate_boolean(self, condition: Dict) -> bool:
+        """Avalia operações booleanas AND/OR"""
+        results = [self._evaluate_condition(op) for op in condition['operands']]
+        
+        if condition['op'] == 'and':
+            return all(results)
+        else:
+            return any(results)
+    
+    def _evaluate_unary(self, condition: Dict) -> bool:
+        """Avalia operador NOT"""
+        operand_value = self._evaluate_condition(condition['operand'])
+        return not operand_value
+    
+    def _get_sequence(self, operand: Dict) -> Seq:
+        """Obtém sequência de DNA de um operando"""
+        if operand['type'] == 'variable':
+            return Seq(self.sequences[operand['name']])
+        else:
+            return Seq(operand['value'])
+    
+    def _process_block(self, block: List) -> Dict:
+        """Processa um bloco de operações"""
+        results = {}
+        for op in block:
+            if isinstance(op, ast.Assign):
+                var_name = op.targets[0].id
+                if isinstance(op.value, ast.Call) and op.value.func.id == 'DNA':
+                    self.sequences[var_name] = op.value.args[0].value
+                    results[var_name] = self.sequences[var_name]
+        return results
+    
+    # ... (métodos de geração existentes)
+
+    # Adicione ao DNAGenerator
+
+def _generate_not_operation(self, seq: Seq) -> dict:
+    """Implementa a operação NOT molecular com otimização"""
+    complement = seq.complement()
+    
+    # Otimiza o complemento para evitar estruturas secundárias
+    optimized = self._optimize_sequence(str(complement))
+    
+    return {
+        'output_seq': str(optimized),
+        'enzyme': 'Polymerase',
+        'mechanism': 'Síntese do complemento',
+        'steps': [
+            {'action': 'denature', 'temp': 95, 'time': 5},
+            {'action': 'anneal', 'temp': 55, 'time': 10},
+            {'action': 'extend', 'temp': 72, 'time': 30}
+        ]
+    }
+
+def _generate_loop(self, initial_seq: Seq, iterations: int) -> dict:
+    """Implementa loops como reações em cascata"""
+    current_seq = initial_seq
+    steps = []
+    
+    for i in range(iterations):
+        # Cada iteração é uma reação enzimática
+        result = self.generate({
+            'operation': 'iterate',
+            'input_a': current_seq,
+            'output': f'loop_{i}'
+        })
+        current_seq = result['output_seq']
+        steps.append({
+            'iteration': i,
+            'sequence': str(current_seq),
+            'enzyme': result['enzyme'],
+            'time': i * 30  # Delay crescente
+        })
+    
+    return {
+        'output_seq': str(current_seq),
+        'mechanism': 'Cascata enzimática',
+        'steps': steps,
+        'total_time': iterations * 30
+    }
