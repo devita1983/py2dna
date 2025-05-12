@@ -26,3 +26,4 @@ Requisitos
 Python 3.8+
 
 Jupyter Notebook (para simulações)
+
