@@ -21,3 +21,8 @@ Py2DNA é um compilador que converte expressões lógicas escritas em Python par
 git clone https://github.com/devita1983/py2dna.git
 cd py2dna
 python -m py2dna
+
+Requisitos
+Python 3.8+
+
+Jupyter Notebook (para simulações)
